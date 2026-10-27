@@ -1,179 +1,31 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import Welcome from './components/Welcome'
+import Kitchen from './components/Kitchen'
+import Case1 from './components/Case1'
+import Case2 from './components/Case2'
+import Case3 from './components/Case3'
 
-type Screen = 'start' | 'question1' | 'question2' | 'complete'
+type Screen = 'welcome' | 'kitchen' | 'case'
 
 function App() {
-  const [screen, setScreen] = useState<Screen>('start')
-  const [feedback, setFeedback] = useState('')
+  const [screen, setScreen] = useState<Screen>('welcome')
+  // Number of solved cases (0..3). It also decides the cake image and which case is next,
+  // so a case can never be skipped or replayed.
+  const [solved, setSolved] = useState(0)
 
-  function goTo(nextScreen: Screen) {
-    setFeedback('')
-    setScreen(nextScreen)
-  }
-
-  const buttonStyle =
-    'cursor-pointer rounded-2xl bg-[#F28C98] px-8 py-4 text-xl font-bold text-white shadow-md hover:bg-[#E56F80]'
+  const finishCase = useCallback(() => {
+    setSolved((s) => Math.min(s + 1, 3))
+    setScreen('kitchen')
+  }, [])
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#FFF3DF] p-6">
-      <div className="w-full max-w-3xl rounded-[32px] border-4 border-[#E9BFA6] bg-[#FFFDF7] p-10 text-center shadow-xl">
-
-        <div className="mb-5 text-7xl">🐱🎂</div>
-
-        <h1 className="mb-6 text-4xl font-extrabold text-[#80543F]">
-          A Cake for Professor Cat
-        </h1>
-
-        {screen === 'start' && (
-          <div className="space-y-6">
-            <p className="text-xl text-[#80543F]">
-              Help the little kitten prepare a birthday cake!
-            </p>
-
-            <button
-              className={buttonStyle}
-              onClick={() => goTo('question1')}
-            >
-              Start Game!
-            </button>
-          </div>
-        )}
-
-        {screen === 'question1' && (
-          <div className="space-y-6">
-            <p className="font-bold text-[#B67B66]">
-              LEVEL 1 — QUESTION 1/2
-            </p>
-
-            <div className="rounded-2xl bg-[#FFF3DF] p-6">
-              <p className="mb-3 text-xl font-bold text-[#80543F]">
-                🤖 AI says:
-              </p>
-              <p className="text-xl text-[#80543F]">
-                "Students who drink more coffee get higher grades.
-                So coffee improves grades!"
-              </p>
-            </div>
-
-            <h2 className="text-2xl font-bold text-[#80543F]">
-              Is this conclusion correct?
-            </h2>
-
-            <div className="flex justify-center gap-4">
-              <button
-                className={buttonStyle}
-                onClick={() => setFeedback('Not quite! Try again.')}
-              >
-                YES
-              </button>
-
-              <button
-                className={buttonStyle}
-                onClick={() => setFeedback('correct')}
-              >
-                NO
-              </button>
-            </div>
-
-            {feedback === 'correct' ? (
-              <div className="space-y-4">
-                <p className="text-xl font-bold text-green-700">
-                  Correct! Correlation does not prove causation!
-                </p>
-
-                <button
-                  className={buttonStyle}
-                  onClick={() => goTo('question2')}
-                >
-                  Next Question →
-                </button>
-              </div>
-            ) : (
-              feedback && (
-                <p className="text-xl font-bold text-red-600">
-                  {feedback}
-                </p>
-              )
-            )}
-          </div>
-        )}
-
-        {screen === 'question2' && (
-          <div className="space-y-6">
-            <p className="font-bold text-[#B67B66]">
-              LEVEL 1 — QUESTION 2/2
-            </p>
-
-            <h2 className="text-2xl font-bold text-[#80543F]">
-              What else could explain this?
-            </h2>
-
-            <div className="flex flex-col gap-4">
-              <button
-                className={buttonStyle}
-                onClick={() => setFeedback('Try again!')}
-              >
-                A. Coffee gives students perfect grades.
-              </button>
-
-              <button
-                className={buttonStyle}
-                onClick={() => setFeedback('correct')}
-              >
-                B. These students may also study longer.
-              </button>
-
-              <button
-                className={buttonStyle}
-                onClick={() => setFeedback('Try again!')}
-              >
-                C. Grades depend only on coffee.
-              </button>
-            </div>
-
-            {feedback === 'correct' ? (
-              <div className="space-y-4">
-                <p className="text-xl font-bold text-green-700">
-                  Correct! There may be another explanation!
-                </p>
-
-                <button
-                  className={buttonStyle}
-                  onClick={() => goTo('complete')}
-                >
-                  Continue →
-                </button>
-              </div>
-            ) : (
-              feedback && (
-                <p className="text-xl font-bold text-red-600">
-                  {feedback}
-                </p>
-              )
-            )}
-          </div>
-        )}
-
-        {screen === 'complete' && (
-          <div className="space-y-6">
-            <div className="text-7xl">🍰</div>
-
-            <h2 className="text-3xl font-bold text-[#80543F]">
-              Level 1 Complete!
-            </h2>
-
-            <p className="text-xl text-[#80543F]">
-              You earned the cake base!
-            </p>
-
-            <button
-              className={buttonStyle}
-              onClick={() => goTo('start')}
-            >
-              Play Again
-            </button>
-          </div>
-        )}
+    <main className="grid h-dvh w-screen place-items-center overflow-hidden bg-[#2B3F33]">
+      <div className="stage">
+        {screen === 'welcome' && <Welcome onStart={() => setScreen('kitchen')} />}
+        {screen === 'kitchen' && <Kitchen solved={solved} onStartCase={() => setScreen('case')} />}
+        {screen === 'case' && solved === 0 && <Case1 onComplete={finishCase} />}
+        {screen === 'case' && solved === 1 && <Case2 onComplete={finishCase} />}
+        {screen === 'case' && solved === 2 && <Case3 onComplete={finishCase} />}
       </div>
     </main>
   )
